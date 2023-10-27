@@ -6,6 +6,7 @@
 // at a set amount of time we supply.
 
 use near_gas::NearGas;
+use near_token::NearToken;
 use near_units::parse_near;
 use serde::Deserialize;
 use serde_json::json;
@@ -75,7 +76,7 @@ async fn main() -> anyhow::Result<()> {
             "recurring": true,
         }))
         .max_gas()
-        .deposit(parse_near!("1 N"))
+        .deposit(NearToken::from_near(1).as_yoctonear())
         .transact()
         .await?;
     println!("-- outcome: {:#?}\n", outcome);
@@ -84,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
     // for executing it:
     let agent_1 = croncat
         .create_subaccount("agent_1")
-        .initial_balance(parse_near!("10 N"))
+        .initial_balance(NearToken::from_near(10).as_yoctonear())
         .transact()
         .await?
         .into_result()?;
@@ -106,7 +107,7 @@ pub async fn run_scheduled_tasks(
     let outcome = agent
         .call(contract.id(), "register_agent")
         .args_json(json!({}))
-        .deposit(parse_near!("0.00226 N"))
+        .deposit("0.00226 N".parse()?)
         .transact()
         .await?;
     println!("Registering agent outcome: {:#?}\n", outcome);
@@ -160,7 +161,7 @@ pub async fn run_scheduled_tasks(
         .json::<Option<Agent>>()?
         .unwrap();
     println!("Agent details after completing task: {:#?}", agent_details);
-    assert_eq!(agent_details.balance, parse_near!("0.00386 N"));
+    assert_eq!(agent_details.balance, "0.00386 N".parse()?);
     let before_withdraw = agent_details.balance;
 
     // Withdraw the reward from completing the task to our agent's account
@@ -180,7 +181,7 @@ pub async fn run_scheduled_tasks(
         .json::<Option<Agent>>()?
         .unwrap();
     println!("Agent details after withdrawing task: {:#?}", agent_details);
-    assert_eq!(agent_details.balance, parse_near!("0.00226 N"));
+    assert_eq!(agent_details.balance, "0.00226 N".parse()?);
 
     // This shows how much the agent has profitted from executing the task:
     println!(

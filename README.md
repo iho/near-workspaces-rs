@@ -266,10 +266,10 @@ This next line will actually pull down the relevant contract from testnet and se
 Following that we will have to init the contract again with our own metadata. This is because the contract's data is to big for the RPC service to pull down, who's limits are set to 50kb.
 
 ```rust
-
+    use near_token::NearToken;
     let contract = worker
         .import_contract(&contract_id, &testnet)
-        .initial_balance(parse_near!("1000 N"))
+        .initial_balance(NearToken::from_near(1000).as_yocto())
         .block_height(BLOCK_HEIGHT)
         .transact()
         .await?;

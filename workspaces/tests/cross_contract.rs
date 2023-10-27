@@ -1,5 +1,4 @@
-use near_sdk::json_types::U128;
-use near_units::parse_near;
+use near_token::NearToken;
 use workspaces::result::ExecutionFinalResult;
 use workspaces::{AccountId, Contract};
 
@@ -11,13 +10,13 @@ const FACTORY_CONTRACT: &[u8] =
 /// Create a new contract account through a cross contract call with "deploy_status_message".
 async fn cross_contract_create_contract(
     status_id: &AccountId,
-    status_amt: &U128,
+    status_amt: &u128,
     contract: &Contract,
 ) -> anyhow::Result<ExecutionFinalResult> {
     contract
         .call("deploy_status_message")
-        .args_json((status_id.clone(), status_amt))
-        .deposit(parse_near!("50 N"))
+        .args_json((status_id.clone(), status_amt.to_string()))
+        .deposit(NearToken::from_near(50).as_yoctonear())
         .max_gas()
         .transact()
         .await
@@ -28,7 +27,7 @@ async fn cross_contract_create_contract(
 async fn test_cross_contract_create_contract() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
     let contract = worker.dev_deploy(FACTORY_CONTRACT).await?;
-    let status_amt = U128::from(parse_near!("35 N"));
+    let status_amt = NearToken::from_near(35).as_yoctonear();
 
     // Expect to fail for trying to create a new contract account with too short of a
     // top level account name, such as purely just "status"
@@ -59,7 +58,7 @@ async fn test_cross_contract_create_contract() -> anyhow::Result<()> {
 async fn test_cross_contract_calls() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
     let contract = worker.dev_deploy(FACTORY_CONTRACT).await?;
-    let status_amt = U128::from(parse_near!("35 N"));
+    let status_amt = NearToken::from_near(35).as_yoctonear();
 
     let status_id: AccountId = "status-top-level-account-long-name".parse().unwrap();
     cross_contract_create_contract(&status_id, &status_amt, &contract)

@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 use near_gas::NearGas;
-use near_token::NearToken;
-use near_units::parse_near;
 use serde_json::json;
 use workspaces::network::Sandbox;
+use workspaces::types::token::NearToken;
 use workspaces::{Account, AccountId, Contract, Worker};
 use workspaces::{BlockHeight, DevNetwork};
 
@@ -51,7 +50,7 @@ async fn create_ref(owner: &Account, worker: &Worker<Sandbox>) -> anyhow::Result
     owner
         .call(ref_finance.id(), "storage_deposit")
         .args_json(json!({}))
-        .deposit(parse_near!("30 mN"))
+        .deposit(NearToken::from_millinear(30).as_yoctonear())
         .transact()
         .await?
         .into_result()?;
@@ -78,7 +77,7 @@ async fn create_wnear(owner: &Account, worker: &Worker<Sandbox>) -> anyhow::Resu
     owner
         .call(wnear.id(), "storage_deposit")
         .args_json(json!({}))
-        .deposit("0.008 N".parse()?)
+        .deposit(NearToken::from_millinear(8).as_yoctonear())
         .transact()
         .await?
         .into_result()?;
@@ -119,7 +118,7 @@ async fn create_pool_with_liquidity(
             "tokens": token_ids,
             "fee": 25
         }))
-        .deposit(parse_near!("3 mN"))
+        .deposit(NearToken::from_millinear(3).as_yoctonear())
         .transact()
         .await?
         .json()?;
@@ -199,7 +198,7 @@ async fn create_custom_ft(
     ft.call("new_default_meta")
         .args_json(json!({
             "owner_id": owner.id(),
-            "total_supply": NearToken::from_near(1_000_000_000).as_yoctonear() ,
+            "total_supply": NearToken::from_near(1_000_000_000),
         }))
         .transact()
         .await?
@@ -295,7 +294,7 @@ async fn main() -> anyhow::Result<()> {
             "pool_id": pool_id,
             "token_in": ft.id(),
             "token_out": wnear.id(),
-            "amount_in": NearToken::from_near(10).to_string(),
+            "amount_in": NearToken::from_near(1),
         }))
         .await?
         .json()?;
@@ -313,7 +312,7 @@ async fn main() -> anyhow::Result<()> {
                 "pool_id": pool_id,
                 "token_in": ft.id(),
                 "token_out": wnear.id(),
-                "amount_in": NearToken::from_near(1).as_yoctonear().to_string(),
+                "amount_in": NearToken::from_near(1),
                 "min_amount_out": "1",
             })],
         }))

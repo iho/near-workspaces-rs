@@ -8,6 +8,7 @@ pub(crate) mod chunk;
 
 #[cfg(feature = "interop_sdk")]
 mod sdk;
+pub mod token;
 
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
